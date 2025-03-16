@@ -24,14 +24,14 @@ public class MemberDashboardServlet extends HttpServlet {
 
     private SessionDAO sessionDAO;
     private BookingDAO bookingDAO;
-    private MemberDAO memberDAO; // Add MemberDAO instance
+    private MemberDAO memberDAO;
 
     @Override
     public void init() throws ServletException {
         super.init();
         sessionDAO = new SessionDAO();
         bookingDAO = new BookingDAO();
-        memberDAO = new MemberDAO(); // Initialize MemberDAO
+        memberDAO = new MemberDAO();
     }
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -39,23 +39,18 @@ public class MemberDashboardServlet extends HttpServlet {
 
         HttpSession session = request.getSession(false);
         User user = (User) session.getAttribute("user");
-        //Integer userId = user.getId(); // Get the user's ID -- Correct, but we'll use memberId
 
         try {
-            // Get the Member object associated with the logged-in user
             Member member = memberDAO.getMemberByUserId(user.getId());
             if (member == null) {
-                // Handle the case where the user isn't associated with a member (shouldn't happen normally)
                 request.setAttribute("errorMessage", "No member profile found for this user.");
                 request.getRequestDispatcher("/WEB-INF/jsp/member/dashboard.jsp").forward(request, response);
-                return; // Important: Stop processing if no member is found
+                return;
             }
 
-            // Get bookings for the member (using the member's ID, NOT the user's ID)
             List<Booking> bookings = bookingDAO.getBookingsByMemberId(member.getId()); // Use member.getId()
             List<Session> bookedSessions = new ArrayList<>();
 
-            // Fetch session details for each booking
             for (Booking booking : bookings) {
                 Session sessionData = sessionDAO.getSessionById(booking.getSessionId());
                 if (sessionData != null) {
@@ -66,8 +61,7 @@ public class MemberDashboardServlet extends HttpServlet {
             request.setAttribute("bookedSessions", bookedSessions);
 
         } catch (SQLException e) {
-            // Handle database errors appropriately (log them, display a user-friendly message)
-            throw new ServletException("Database error", e); // Or handle more gracefully
+            throw new ServletException("Database error", e);
         }
         request.getRequestDispatcher("/WEB-INF/jsp/member/dashboard.jsp").forward(request, response);
     }

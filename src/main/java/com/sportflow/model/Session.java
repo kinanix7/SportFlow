@@ -16,7 +16,6 @@ public class Session {
     private Integer maxParticipants;
     private LocalDateTime createdAt;
 
-    // Getters and Setters
     public Integer getId() {
         return id;
     }

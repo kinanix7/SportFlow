@@ -63,7 +63,6 @@ public class MemberDAO {
         } finally {
             if (resultSet != null) resultSet.close();
             if (preparedStatement != null) preparedStatement.close();
-            // if (connection != null) connection.close();
         }
         return members;
     }
@@ -88,7 +87,6 @@ public class MemberDAO {
                 member.setSport(resultSet.getString("sport"));
                 member.setRegistrationDate(resultSet.getTimestamp("registration_date").toLocalDateTime());
 
-                // Set User details
                 User user = new User();
                 user.setId(resultSet.getInt("user_id")); // Use user_id from the result set
                 user.setUsername(resultSet.getString("username"));
@@ -101,7 +99,6 @@ public class MemberDAO {
         } finally {
             if (resultSet != null) resultSet.close();
             if (preparedStatement != null) preparedStatement.close();
-            // if (connection != null) connection.close(); // Consider connection pooling
         }
         return members;
     }
@@ -132,7 +129,6 @@ public class MemberDAO {
         } finally {
             if (resultSet != null) resultSet.close();
             if (preparedStatement != null) preparedStatement.close();
-            //  if (connection != null) connection.close();
         }
         return member;
     }
@@ -181,7 +177,6 @@ public class MemberDAO {
         }  finally {
             if (resultSet != null) resultSet.close();
             if (preparedStatement != null) preparedStatement.close();
-            //  if (connection != null) connection.close();
         }
         return member;
     }
@@ -198,7 +193,6 @@ public class MemberDAO {
         }  finally {
 
             if (preparedStatement != null) preparedStatement.close();
-            // if (connection != null) connection.close();
         }
     }
 }

@@ -31,20 +31,16 @@ public class ViewEnrolledMembersServlet extends HttpServlet {
         int sessionId = Integer.parseInt(request.getParameter("sessionId"));
 
         try {
-            // Fetch the session (for display in the new page)
             Session session = sessionDAO.getSessionById(sessionId);
             if (session == null) {
-                // Handle session not found (redirect to an error page, perhaps)
                 response.sendError(HttpServletResponse.SC_NOT_FOUND, "Session not found");
                 return;
             }
             request.setAttribute("session", session);
 
-            // Fetch the enrolled members
             List<Member> enrolledMembers = sessionDAO.getMembersBySessionId(sessionId);
             request.setAttribute("enrolledMembers", enrolledMembers);
 
-            // Forward to the new JSP
             request.getRequestDispatcher("/WEB-INF/jsp/entrainer/view-enrolled-members.jsp").forward(request, response);
 
         } catch (SQLException e) {

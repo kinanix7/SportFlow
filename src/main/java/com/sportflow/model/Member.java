@@ -1,4 +1,3 @@
-// In Member.java
 package com.sportflow.model;
 
 import java.time.LocalDate;
@@ -6,15 +5,14 @@ import java.time.LocalDateTime;
 
 public class Member {
     private Integer id;
-    private Integer userId; // Foreign key to users table
+    private Integer userId;
     private String firstName;
     private String lastName;
     private LocalDate birthDate;
     private String sport;
     private LocalDateTime registrationDate;
-    private User user;  // Add User field
+    private User user;
 
-    // Getters and setters
     public Integer getId() {
         return id;
     }

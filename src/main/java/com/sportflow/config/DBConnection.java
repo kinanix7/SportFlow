@@ -7,8 +7,8 @@ import java.sql.SQLException;
 public class DBConnection {
 
     private static final String URL = "jdbc:mysql://localhost:3306/sportflow";
-    private static final String USER = "root";  // Replace with your MySQL username
-    private static final String PASSWORD = ""; // Replace with your MySQL password
+    private static final String USER = "root";
+    private static final String PASSWORD = "";
 
     private static Connection connection;
 
@@ -24,7 +24,6 @@ public class DBConnection {
         return connection;
     }
 
-    // Optional:  Method to close the connection (good practice, but often handled by the container)
     public static void closeConnection() throws SQLException {
         if (connection != null && !connection.isClosed()) {
             connection.close();

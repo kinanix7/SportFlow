@@ -31,7 +31,6 @@ public class EntrainerDAO {
         } finally {
 
             if (preparedStatement != null) preparedStatement.close();
-            //  if (connection != null) connection.close();
         }
     }
 
@@ -59,7 +58,6 @@ public class EntrainerDAO {
         }finally {
             if (resultSet != null) resultSet.close();
             if (preparedStatement != null) preparedStatement.close();
-            //  if (connection != null) connection.close();
         }
         return entrainers;
     }
@@ -82,7 +80,6 @@ public class EntrainerDAO {
                 entrainer.setLastName(resultSet.getString("last_name"));
                 entrainer.setSpecialty(resultSet.getString("specialty"));
 
-                // Add user details
                 User user = new User();
                 user.setId(resultSet.getInt("user_id"));
                 user.setUsername(resultSet.getString("username"));
@@ -94,7 +91,6 @@ public class EntrainerDAO {
         }  finally {
             if (resultSet != null) resultSet.close();
             if (preparedStatement != null) preparedStatement.close();
-            // if (connection != null) connection.close(); // Consider connection pooling
         }
         return entrainers;
     }
@@ -123,7 +119,6 @@ public class EntrainerDAO {
         }finally {
             if (resultSet != null) resultSet.close();
             if (preparedStatement != null) preparedStatement.close();
-            // if (connection != null) connection.close();
         }
         return entrainer;
     }
@@ -143,7 +138,6 @@ public class EntrainerDAO {
         } finally {
 
             if (preparedStatement != null) preparedStatement.close();
-            // if (connection != null) connection.close();
         }
     }
     public Entrainer getEntrainerByUserId(int userId) throws SQLException {
@@ -170,7 +164,6 @@ public class EntrainerDAO {
         } finally {
             if (resultSet != null) resultSet.close();
             if (preparedStatement != null) preparedStatement.close();
-            // Consider if connection should be closed here, or managed externally (connection pool).
         }
         return entrainer;
     }
@@ -188,7 +181,6 @@ public class EntrainerDAO {
             preparedStatement.executeUpdate();
         } finally {
             if (preparedStatement != null) preparedStatement.close();
-            // Consider connection closing strategy.
         }
     }
 }

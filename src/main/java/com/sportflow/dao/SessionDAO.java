@@ -105,7 +105,6 @@ public class SessionDAO {
         } finally {
             if (resultSet != null) resultSet.close();
             if (preparedStatement != null) preparedStatement.close();
-            // if (connection != null) connection.close();
         }
         return sessions;
     }
@@ -136,7 +135,6 @@ public class SessionDAO {
         } finally {
             if (resultSet != null) resultSet.close();
             if (preparedStatement != null) preparedStatement.close();
-            // if (connection != null) connection.close(); // Connection management
         }
         return session;
     }
@@ -159,7 +157,6 @@ public class SessionDAO {
             preparedStatement.executeUpdate();
         } finally {
             if (preparedStatement != null) preparedStatement.close();
-            // if (connection != null) connection.close(); // Consider connection pooling
         }
     }
 
@@ -177,7 +174,6 @@ public class SessionDAO {
         } finally {
 
             if (preparedStatement != null) preparedStatement.close();
-            //if (connection != null) connection.close();
         }
     }
     // New method to get members enrolled in a session
@@ -189,7 +185,6 @@ public class SessionDAO {
 
         try {
             connection = DBConnection.getConnection();
-            // Join bookings, members, and users tables
             String sql = "SELECT m.*, u.username, u.email, u.role " +
                     "FROM bookings b " +
                     "JOIN members m ON b.member_id = m.id " +
@@ -207,19 +202,17 @@ public class SessionDAO {
                 member.setLastName(resultSet.getString("last_name"));
                 member.setBirthDate(resultSet.getDate("birth_date").toLocalDate());
                 member.setSport(resultSet.getString("sport"));
-                // Set user details (create and populate a User object)
                 User user = new User();
                 user.setId(resultSet.getInt("user_id"));
                 user.setUsername(resultSet.getString("username"));
                 user.setEmail(resultSet.getString("email"));
                 user.setRole(resultSet.getString("role"));
-                member.setUser(user); // Set the User object in Member
+                member.setUser(user);
                 members.add(member);
             }
         } finally {
             if (resultSet != null) resultSet.close();
             if (preparedStatement != null) preparedStatement.close();
-            // Connection closing as before
         }
         return members;
     }

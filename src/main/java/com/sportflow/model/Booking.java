@@ -9,7 +9,6 @@ public class Booking {
     private LocalDateTime bookingDate;
     private String status; // "CONFIRMED", "CANCELLED", "PENDING"
 
-    // Getters and setters
     public Integer getId() {
         return id;
     }

@@ -35,15 +35,12 @@ public class AdminDashboardServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
-            // Fetch total members
             List<Member> members = memberDAO.getAllMembers();
             request.setAttribute("totalMembers", members.size());
 
-            // Fetch total sessions
             List<Session> sessions = sessionDAO.getAllSessions();
             request.setAttribute("totalSessions", sessions.size());
 
-            // Fetch total bookings
             int totalBookings = 0;
             for (Session session : sessions) {
                 List<Booking> bookings = bookingDAO.getBookingsBySessionId(session.getId());
@@ -51,7 +48,6 @@ public class AdminDashboardServlet extends HttpServlet {
             }
             request.setAttribute("totalBookings", totalBookings);
 
-            // You can add more data here as needed for the dashboard
 
         } catch (SQLException e) {
             throw new ServletException("Database error", e);

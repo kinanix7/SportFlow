@@ -42,20 +42,17 @@ public class EntrainerDashboardServlet extends HttpServlet {
 
         try {
 
-            // Get Entrainer object to fetch ID.
-            Entrainer entrainer = entrainerDAO.getEntrainerByUserId(userId); // Efficient lookup by userId
+            Entrainer entrainer = entrainerDAO.getEntrainerByUserId(userId);
 
-            // Get sessions for the entrainer
             List<Session> sessions = sessionDAO.getSessionsByEntrainerId(entrainer.getId());
             request.setAttribute("sessions", sessions);
 
-            // Calculate number of members enrolled (using Java Streams for conciseness)
             int totalMembers = sessions.stream()
                     .mapToInt(s -> {
                         try {
                             return bookingDAO.getBookingsBySessionId(s.getId()).size();
                         } catch (SQLException e) {
-                            throw new RuntimeException(e); // Handle or log appropriately
+                            throw new RuntimeException(e);
                         }
                     })
                     .sum();

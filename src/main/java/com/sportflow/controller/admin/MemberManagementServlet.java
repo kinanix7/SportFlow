@@ -16,10 +16,10 @@ import java.time.LocalDate;
 import java.util.List;
 
 @WebServlet(name = "MemberManagementServlet", urlPatterns = {
-        "/admin/members",         // GET: Display list of members
-        "/admin/members/add",     // POST: Add a new member
-        "/admin/members/edit",    // POST: Edit an existing member
-        "/admin/members/delete"   // POST: Delete a member
+        "/admin/members",
+        "/admin/members/add",
+        "/admin/members/edit",
+        "/admin/members/delete"
 })
 
 public class MemberManagementServlet extends HttpServlet {
@@ -37,8 +37,7 @@ public class MemberManagementServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
-            // For simplicity, combine all user and member data fetching here.  In a real app,
-            // you might separate this into different methods/servlets.
+
 
             List<Member> members = memberDAO.getAllMembersWithUserDetails();
             request.setAttribute("members", members);
@@ -74,21 +73,18 @@ public class MemberManagementServlet extends HttpServlet {
 
 
     private void addMember(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException, ServletException {
-        // Create User first
         User user = new User();
         user.setUsername(request.getParameter("username"));
-        user.setPassword(request.getParameter("password")); // Will be hashed in DAO
+        user.setPassword(request.getParameter("password"));
         user.setEmail(request.getParameter("email"));
         user.setRole("MEMBER");
-        userDAO.createUser(user);  // This also sets the user's ID
-
-        // Create Member, linking to the newly created User
+        userDAO.createUser(user);
         Member member = new Member();
-        member.setUserId(user.getId()); // Use the ID from the created User
+        member.setUserId(user.getId());
         member.setFirstName(request.getParameter("firstName"));
         member.setLastName(request.getParameter("lastName"));
         String birthDateStr = request.getParameter("birthDate");
-        member.setBirthDate(DateUtil.parseDate(birthDateStr)); // Use DateUtil
+        member.setBirthDate(DateUtil.parseDate(birthDateStr));
         member.setSport(request.getParameter("sport"));
         memberDAO.createMember(member);
 
@@ -98,29 +94,24 @@ public class MemberManagementServlet extends HttpServlet {
 
 
     private void editMember(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException, ServletException {
-        // Get member and user IDs
         int memberId = Integer.parseInt(request.getParameter("memberId"));
-        int userId = Integer.parseInt(request.getParameter("userId")); // Get userId from the form
+        int userId = Integer.parseInt(request.getParameter("userId"));
 
-        // Fetch existing member and user
         Member member = memberDAO.getMemberById(memberId);
-        User user = userDAO.getUserById(userId);  // Fetch the associated User
+        User user = userDAO.getUserById(userId);
 
-        // Update Member details
         member.setFirstName(request.getParameter("firstName"));
         member.setLastName(request.getParameter("lastName"));
         String birthDateStr = request.getParameter("birthDate");
-        member.setBirthDate(DateUtil.parseDate(birthDateStr));  // Parse date
+        member.setBirthDate(DateUtil.parseDate(birthDateStr));
         member.setSport(request.getParameter("sport"));
 
-        // Update User details
         user.setUsername(request.getParameter("username"));
         user.setEmail(request.getParameter("email"));
 
 
-        // Update in database
         memberDAO.updateMember(member);
-        userDAO.updateUser(user);  // Update the User object
+        userDAO.updateUser(user);
 
         response.sendRedirect(request.getContextPath() + "/admin/members");
     }
@@ -130,9 +121,8 @@ public class MemberManagementServlet extends HttpServlet {
         int memberId = Integer.parseInt(request.getParameter("memberId"));
         int userId = Integer.parseInt(request.getParameter("userId"));
 
-        // Delete member (cascading delete will handle user deletion)
         memberDAO.deleteMember(memberId);
-        userDAO.deleteUser(userId);  // Explicitly delete the User
+        userDAO.deleteUser(userId);
 
         response.sendRedirect(request.getContextPath() + "/admin/members");
     }

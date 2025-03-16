@@ -31,7 +31,7 @@ public class BookSessionServlet extends HttpServlet {
     private SessionDAO sessionDAO;
     private BookingDAO bookingDAO;
     private EntrainerDAO entrainerDAO;
-    private MemberDAO memberDAO; // Add MemberDAO
+    private MemberDAO memberDAO;
 
     @Override
     public void init() throws ServletException {
@@ -39,7 +39,7 @@ public class BookSessionServlet extends HttpServlet {
         sessionDAO = new SessionDAO();
         bookingDAO = new BookingDAO();
         entrainerDAO = new EntrainerDAO();
-        memberDAO = new MemberDAO(); // Initialize MemberDAO
+        memberDAO = new MemberDAO();
     }
 
     @Override
@@ -51,13 +51,11 @@ public class BookSessionServlet extends HttpServlet {
         String action = request.getServletPath();
 
         try {
-            if (action.equals("/member/book-session") || action.equals("/member/view-sessions")) { // Handle both URLs
-                // Fetch available sessions
+            if (action.equals("/member/book-session") || action.equals("/member/view-sessions")) {
                 List<Session> allSessions = sessionDAO.getAllSessions();
                 List<Session> availableSessions = new ArrayList<>();
 
                 for (Session s : allSessions) {
-                    // Check capacity
                     List<Booking> bookingsForSession = bookingDAO.getBookingsBySessionId(s.getId());
                     if (bookingsForSession.size() < s.getMaxParticipants()) {
                         availableSessions.add(s);
@@ -65,7 +63,6 @@ public class BookSessionServlet extends HttpServlet {
                 }
                 request.setAttribute("sessions", availableSessions);
 
-                // Fetch entrainers for display (you might want a simplified EntrainerInfo object for this)
                 List<Entrainer> entrainers = entrainerDAO.getAllEntrainers();
                 request.setAttribute("entrainers", entrainers);
                 request.getRequestDispatcher("/WEB-INF/jsp/member/view-sessions.jsp").forward(request, response); // Forward to view-sessions.jsp
@@ -99,14 +96,10 @@ public class BookSessionServlet extends HttpServlet {
             int memberId = member.getId();
             int sessionId = Integer.parseInt(request.getParameter("sessionId"));
 
-            // Check if the booking already exists *before* attempting to create it
             if (bookingDAO.bookingExists(memberId, sessionId)) {
-                // Set an error message
                 request.setAttribute("errorMessage", "You have already booked this session.");
-                // Forward *back* to the view-sessions page to display the error
-                doGet(request, response); // Reuse doGet to re-fetch and display data
+                doGet(request, response);
             } else {
-                // Booking doesn't exist, proceed with creation
                 Booking booking = new Booking();
                 booking.setMemberId(memberId);
                 booking.setSessionId(sessionId);
@@ -115,9 +108,8 @@ public class BookSessionServlet extends HttpServlet {
             }
 
         } catch (SQLException e) {
-            // Handle database errors (other than duplicate booking)
             request.setAttribute("errorMessage", "A database error occurred. Please try again later.");
-            doGet(request, response); // Forward back to the form
+            doGet(request, response);
         }
     }
 

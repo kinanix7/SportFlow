@@ -20,7 +20,7 @@ public class LoginServlet extends HttpServlet {
     @Override
     public void init() throws ServletException {
         super.init();
-        userDAO = new UserDAO(); // Initialize DAO
+        userDAO = new UserDAO();
     }
 
     @Override
@@ -40,11 +40,9 @@ public class LoginServlet extends HttpServlet {
             User user = userDAO.authenticate(username, password);
 
             if (user != null) {
-                // Authentication successful, create session
                 HttpSession session = request.getSession();
                 session.setAttribute("user", user);
 
-                // Redirect based on role
                 if ("ADMIN".equals(user.getRole())) {
                     response.sendRedirect(request.getContextPath() + "/admin/dashboard");
                 } else if ("MEMBER".equals(user.getRole())) {
@@ -52,12 +50,10 @@ public class LoginServlet extends HttpServlet {
                 } else if ("ENTRAINER".equals(user.getRole())) {
                     response.sendRedirect(request.getContextPath() + "/entrainer/dashboard");
                 } else {
-                    // Handle unexpected roles (shouldn't happen)
                     request.setAttribute("errorMessage", "Invalid user role.");
                     request.getRequestDispatcher("/WEB-INF/jsp/auth/login.jsp").forward(request, response);
                 }
             } else {
-                // Authentication failed
                 request.setAttribute("errorMessage", "Invalid username or password.");
                 request.getRequestDispatcher("/WEB-INF/jsp/auth/login.jsp").forward(request, response);
             }

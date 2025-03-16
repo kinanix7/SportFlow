@@ -9,7 +9,6 @@ import java.util.List;
 
 public class BookingDAO {
 
-    // Add this method to check for existing bookings!
     public boolean bookingExists(int memberId, int sessionId) throws SQLException {
         Connection connection = null;
         PreparedStatement preparedStatement = null;
@@ -26,7 +25,6 @@ public class BookingDAO {
         } finally {
             if (resultSet != null) resultSet.close();
             if (preparedStatement != null) preparedStatement.close();
-            //  if (connection != null) connection.close(); // Connection handling
         }
     }
     public void createBooking(Booking booking) throws SQLException {
@@ -49,11 +47,9 @@ public class BookingDAO {
         } finally {
 
             if (preparedStatement != null) preparedStatement.close();
-            // if (connection != null) connection.close();
         }
     }
 
-    // ... other methods ...
     public List<Booking> getBookingsByMemberId(int memberId) throws SQLException {
         List<Booking> bookings = new ArrayList<>();
         Connection connection = null;
@@ -78,12 +74,10 @@ public class BookingDAO {
         } finally {
             if (resultSet != null) resultSet.close();
             if (preparedStatement != null) preparedStatement.close();
-            // if (connection != null) connection.close();
         }
         return bookings;
     }
 
-    // Method to get bookings by session ID
     public List<Booking> getBookingsBySessionId(int sessionId) throws SQLException {
         List<Booking> bookings = new ArrayList<>();
         Connection connection = null;
@@ -109,12 +103,10 @@ public class BookingDAO {
         } finally {
             if (resultSet != null) resultSet.close();
             if (preparedStatement != null) preparedStatement.close();
-            // Consider how connection closing is handled.
         }
         return bookings;
     }
 
-    // Method to update the status of a booking
     public void updateBookingStatus(int bookingId, String status) throws SQLException {
         Connection connection = null;
         PreparedStatement preparedStatement = null;
@@ -128,7 +120,6 @@ public class BookingDAO {
             preparedStatement.executeUpdate();
         } finally {
             if (preparedStatement != null) preparedStatement.close();
-            // Consider connection management.
         }
     }
 
@@ -143,7 +134,6 @@ public class BookingDAO {
             preparedStatement.executeUpdate();
         } finally {
             if (preparedStatement != null) preparedStatement.close();
-            // if (connection != null) connection.close();
         }
     }
 }

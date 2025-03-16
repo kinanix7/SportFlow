@@ -20,13 +20,12 @@ public class AddAdminServlet extends HttpServlet {
     @Override
     public void init() throws ServletException {
         super.init();
-        userDAO = new UserDAO(); // Initialize the UserDAO
+        userDAO = new UserDAO();
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // Display the add-admin form
         request.getRequestDispatcher("/WEB-INF/jsp/admin/add-admin.jsp").forward(request, response);
     }
 
@@ -38,7 +37,6 @@ public class AddAdminServlet extends HttpServlet {
         String email = request.getParameter("email");
         String password = request.getParameter("password");
 
-        // Basic input validation (you should add more robust validation)
         if (username == null || username.isEmpty() || email == null || email.isEmpty() || password == null || password.isEmpty()) {
             request.setAttribute("errorMessage", "All fields are required.");
             request.getRequestDispatcher("/WEB-INF/jsp/admin/add-admin.jsp").forward(request, response);
@@ -46,22 +44,19 @@ public class AddAdminServlet extends HttpServlet {
         }
 
         try {
-            // Create a new User object
             User newAdmin = new User();
             newAdmin.setUsername(username);
             newAdmin.setEmail(email);
-            newAdmin.setPassword(password); // Password will be hashed in the DAO
+            newAdmin.setPassword(password);
             newAdmin.setRole("ADMIN");
 
-            // Use the UserDAO to create the user (and hash the password)
+
             userDAO.createUser(newAdmin);
 
-            // Redirect to the admin dashboard (or a success page)
             response.sendRedirect(request.getContextPath() + "/admin/dashboard");
 
         } catch (SQLException e) {
-            // Handle database errors (e.g., duplicate username/email)
-            if (e.getMessage().contains("Duplicate entry")) { // Check for duplicate key violation
+            if (e.getMessage().contains("Duplicate entry")) {
                 if(e.getMessage().contains("username"))
                     request.setAttribute("errorMessage", "Username already exists. Please choose a different username.");
                 else
@@ -70,7 +65,7 @@ public class AddAdminServlet extends HttpServlet {
                 request.setAttribute("errorMessage", "A database error occurred. Please try again later.");
 
             }
-            request.getRequestDispatcher("/WEB-INF/jsp/admin/add-admin.jsp").forward(request, response); // Go back to the form
+            request.getRequestDispatcher("/WEB-INF/jsp/admin/add-admin.jsp").forward(request, response);
 
         }
     }

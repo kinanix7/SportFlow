@@ -24,7 +24,6 @@ public class UserDAO {
             resultSet = preparedStatement.executeQuery();
 
             if (resultSet.next()) {
-                // Verify hashed password
                 String hashedPassword = resultSet.getString("password");
                 if (HashUtil.checkPassword(password, hashedPassword)) {
                     User user = new User();
@@ -36,11 +35,10 @@ public class UserDAO {
                     return user;
                 }
             }
-            return null; // Authentication failed
+            return null;
         }finally {
             if (resultSet != null) resultSet.close();
             if (preparedStatement != null) preparedStatement.close();
-//             if (connection != null) connection.close();
         }
     }
 
@@ -49,7 +47,6 @@ public class UserDAO {
         PreparedStatement preparedStatement = null;
         try  {
             connection = DBConnection.getConnection();
-            // Hash the password before storing!
             String hashedPassword = HashUtil.hashPassword(user.getPassword());
 
             String sql = "INSERT INTO users (username, password, role, email) VALUES (?, ?, ?, ?)";
@@ -70,7 +67,6 @@ public class UserDAO {
         }finally {
 
             if (preparedStatement != null) preparedStatement.close();
-            //if (connection != null) connection.close();
         }
     }
 
@@ -89,7 +85,7 @@ public class UserDAO {
                 User user = new User();
                 user.setId(resultSet.getInt("id"));
                 user.setUsername(resultSet.getString("username"));
-                user.setPassword(resultSet.getString("password")); // Consider if you want to return the hashed password
+                user.setPassword(resultSet.getString("password"));
                 user.setRole(resultSet.getString("role"));
                 user.setEmail(resultSet.getString("email"));
                 user.setCreatedAt(resultSet.getTimestamp("created_at").toLocalDateTime());
@@ -98,12 +94,10 @@ public class UserDAO {
         } finally {
             if (resultSet != null) resultSet.close();
             if (preparedStatement != null) preparedStatement.close();
-            // if (connection != null) connection.close();
         }
         return users;
     }
 
-    // Add other CRUD methods (getUserById, updateUser, deleteUser) as needed.  Follow the same pattern.
     public User getUserById(int userId) throws SQLException {
         User user = null;
         Connection connection = null;
@@ -128,7 +122,6 @@ public class UserDAO {
         }  finally {
             if (resultSet != null) resultSet.close();
             if (preparedStatement != null) preparedStatement.close();
-            //if (connection != null) connection.close();
         }
         return user;
     }
@@ -148,7 +141,6 @@ public class UserDAO {
         } finally {
 
             if (preparedStatement != null) preparedStatement.close();
-            // if (connection != null) connection.close();
         }
     }
 
@@ -164,7 +156,6 @@ public class UserDAO {
         } finally {
 
             if (preparedStatement != null) preparedStatement.close();
-            // if (connection != null) connection.close();
         }
     }
 

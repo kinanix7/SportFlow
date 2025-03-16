@@ -10,7 +10,6 @@ public class User {
     private String email;
     private LocalDateTime createdAt;
 
-    // Getters and setters (essential!)
     public Integer getId() {
         return id;
     }

@@ -67,17 +67,15 @@ public class EntrainerManagementServlet extends HttpServlet {
     }
 
     private void addEntrainer(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException {
-        // Create User first
         User user = new User();
         user.setUsername(request.getParameter("username"));
-        user.setPassword(request.getParameter("password"));  // Hashed in DAO
+        user.setPassword(request.getParameter("password"));
         user.setEmail(request.getParameter("email"));
         user.setRole("ENTRAINER");
-        userDAO.createUser(user);  // Sets the generated user ID
+        userDAO.createUser(user);
 
-        // Create Entrainer, linking to the new User
         Entrainer entrainer = new Entrainer();
-        entrainer.setUserId(user.getId()); // Use the generated user ID
+        entrainer.setUserId(user.getId());
         entrainer.setFirstName(request.getParameter("firstName"));
         entrainer.setLastName(request.getParameter("lastName"));
         entrainer.setSpecialty(request.getParameter("specialty"));
@@ -89,28 +87,26 @@ public class EntrainerManagementServlet extends HttpServlet {
 
     private void editEntrainer(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException {
         int entrainerId = Integer.parseInt(request.getParameter("entrainerId"));
-        int userId = Integer.parseInt(request.getParameter("userId")); // Get userId
+        int userId = Integer.parseInt(request.getParameter("userId"));
 
         Entrainer entrainer = entrainerDAO.getEntrainerById(entrainerId);
-        User user = userDAO.getUserById(userId); // Get the User
+        User user = userDAO.getUserById(userId);
 
-        // Update Entrainer
         entrainer.setFirstName(request.getParameter("firstName"));
         entrainer.setLastName(request.getParameter("lastName"));
         entrainer.setSpecialty(request.getParameter("specialty"));
-        // Update user details
         user.setUsername(request.getParameter("username"));
         user.setEmail(request.getParameter("email"));
 
         entrainerDAO.updateEntrainer(entrainer);
-        userDAO.updateUser(user); // Update the User
+        userDAO.updateUser(user);
 
         response.sendRedirect(request.getContextPath() + "/admin/entrainers");
     }
 
     private void deleteEntrainer(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException {
         int entrainerId = Integer.parseInt(request.getParameter("entrainerId"));
-        int userId = Integer.parseInt(request.getParameter("userId")); // Get userId
+        int userId = Integer.parseInt(request.getParameter("userId"));
 
         entrainerDAO.deleteEntrainer(entrainerId);
         userDAO.deleteUser(userId); // Delete User

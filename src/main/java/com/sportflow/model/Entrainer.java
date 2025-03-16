@@ -1,4 +1,3 @@
-//in Entrainer.java
 package com.sportflow.model;
 
 public class Entrainer {
@@ -9,12 +8,11 @@ public class Entrainer {
     private String specialty;
     private User user; // Add user field
 
-    // Getters and setters
 
-    public User getUser() { //Add getter
+    public User getUser() {
         return user;
     }
-    public void setUser(User user) { //And setter
+    public void setUser(User user) {
         this.user = user;
     }
     //rest of getter and setter
