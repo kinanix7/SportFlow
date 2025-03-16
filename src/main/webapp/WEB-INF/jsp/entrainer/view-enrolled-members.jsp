@@ -1,7 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.List" %>
+<%@ page import="com.sportflow.model.Member" %>
 <%@ page import="com.sportflow.model.Session" %>
-<%@ page import="com.sportflow.util.DateUtil" %>
 <%@ include file="../common/header.jsp" %>
 <%@ include file="../common/navbar.jsp" %>
 
@@ -122,68 +122,6 @@
         box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4);
     }
 
-    .btn-danger {
-        background-color: #EF4444;
-        border-color: #EF4444;
-    }
-
-    .btn-danger:hover, .btn-danger:focus {
-        background-color: #DC2626;
-        border-color: #DC2626;
-        box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4);
-    }
-
-    /* Modal styling */
-    .sf-modal {
-        z-index: 1050;
-        overflow: auto;
-    }
-
-    .sf-modal-dialog {
-        max-width: 80%;
-        margin: 1.75rem auto;
-    }
-
-    .sf-modal-content {
-        border-radius: 12px;
-        border: none;
-        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
-        overflow: hidden;
-    }
-
-    .sf-modal-header {
-        border-bottom: 1px solid #f1f5f9;
-        padding: 18px 24px;
-        background-color: #f8fafc;
-    }
-
-    .sf-modal-title {
-        font-weight: 600;
-        color: #0f172a;
-        font-size: 1.2rem;
-    }
-
-    .sf-modal-body {
-        padding: 24px;
-        overflow-y: auto;
-        max-height: 60vh;
-    }
-
-    .sf-modal-footer {
-        border-top: 1px solid #f1f5f9;
-        padding: 16px 24px;
-        background-color: #f8fafc;
-    }
-
-    .close {
-        opacity: 0.6;
-        transition: all 0.2s ease;
-    }
-
-    .close:hover {
-        opacity: 1;
-    }
-
     /* Responsive styles */
     @media (max-width: 992px) {
         .dashboard-title {
@@ -204,6 +142,12 @@
         .dashboard-header {
             margin-bottom: 25px;
         }
+    }
+
+    /* Action buttons in table */
+    .action-buttons {
+        display: flex;
+        gap: 8px;
     }
 
     /* Error and success alerts */
@@ -234,79 +178,44 @@
 <div class="container dashboard-container">
     <div class="bg-pattern"></div>
     <div class="dashboard-header">
-        <h1 class="dashboard-title">Member Dashboard</h1>
+        <h1 class="dashboard-title">Enrolled Members</h1>
     </div>
 
-    <h2>Booked Sessions</h2>
+    <!-- Display session title -->
+    <% Session currentSession = (Session) request.getAttribute("session"); %>
+    <% if (currentSession != null) { %>
+    <h2>Session: <%= currentSession.getTitle() %></h2>
+    <% } %>
 
-    <!-- Check for any error messages -->
-    <% if (request.getAttribute("errorMessage") != null) { %>
-    <div class="alert alert-danger" role="alert">
-        <%= request.getAttribute("errorMessage") %>
-    </div>
-    <% } else { %>
-
-    <% List<Session> bookedSessions = (List<Session>) request.getAttribute("bookedSessions");
-        if (bookedSessions != null && !bookedSessions.isEmpty()) { %>
+    <% List<Member> members = (List<Member>) request.getAttribute("enrolledMembers"); %>
+    <% if (members != null && !members.isEmpty()) { %>
     <div class="table-container">
         <div class="table-responsive">
             <table class="table">
                 <thead>
                 <tr>
-                    <th>Title</th>
-                    <th>Description</th>
-                    <th>Date</th>
-                    <th>Start Time</th>
-                    <th>End Time</th>
-                    <th>Actions</th>
+                    <th>Name</th>
+                    <th>Username</th>
+                    <th>Email</th>
                 </tr>
                 </thead>
                 <tbody>
-                <% for (Session bookedSession : bookedSessions) { %>
+                <% for (Member member : members) { %>
                 <tr>
-                    <td><%= bookedSession.getTitle() %></td>
-                    <td><%= bookedSession.getDescription() %></td>
-                    <td><%= DateUtil.formatDate(bookedSession.getSessionDate()) %></td>
-                    <td><%= DateUtil.formatTime(bookedSession.getStartTime()) %></td>
-                    <td><%= DateUtil.formatTime(bookedSession.getEndTime()) %></td>
-                    <td>
-                        <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#cancelBookingModal<%= bookedSession.getId() %>">Cancel</button>
-                    </td>
+                    <td><%= member.getFirstName() %> <%= member.getLastName() %></td>
+                    <td><%= member.getUser().getUsername() %></td>
+                    <td><%= member.getUser().getEmail() %></td>
                 </tr>
-
-                <!-- Cancel Booking Modal -->
-                <div class="modal fade sf-modal" id="cancelBookingModal<%= bookedSession.getId() %>" tabindex="-1" role="dialog" aria-labelledby="cancelBookingModalLabel<%= bookedSession.getId() %>" aria-hidden="true">
-                    <div class="modal-dialog" role="document">
-                        <div class="modal-content sf-modal-content">
-                            <div class="modal-header sf-modal-header">
-                                <h5 class="modal-title sf-modal-title" id="cancelBookingModalLabel<%= bookedSession.getId() %>">Confirm Cancellation</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">×</span>
-                                </button>
-                            </div>
-                            <div class="modal-body sf-modal-body">
-                                Are you sure you want to cancel your booking for this session?
-                            </div>
-                            <div class="modal-footer sf-modal-footer">
-                                <form action="<%=request.getContextPath()%>/member/cancel-booking" method="get">
-                                    <input type="hidden" name="bookingId" value="<%= bookedSession.getId() %>">
-                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                    <button type="submit" class="btn btn-danger">Confirm Cancel</button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <% } %>
                 </tbody>
             </table>
         </div>
     </div>
     <% } else { %>
-    <p>You have no booked sessions.</p>
+    <p>No members are currently enrolled in this session.</p>
     <% } %>
-    <% } %>
+
+    <a href="<%= request.getContextPath() %>/entrainer/sessions" class="btn btn-primary">Back to Sessions</a>
 </div>
 
 <%@ include file="../common/footer.jsp" %>

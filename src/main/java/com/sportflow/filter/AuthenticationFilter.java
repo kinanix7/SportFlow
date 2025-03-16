@@ -1,4 +1,3 @@
-// AuthenticationFilter.java
 package com.sportflow.filter;
 
 import jakarta.servlet.*;
@@ -9,26 +8,25 @@ import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 
+@WebFilter(urlPatterns = {"/admin/*", "/member/*", "/entrainer/*"}) // Apply to protected areas
 public class AuthenticationFilter implements Filter {
 
     @Override
-    public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-        HttpServletRequest request = (HttpServletRequest) req;
-        HttpServletResponse response = (HttpServletResponse) res;
-        HttpSession session = request.getSession(false);
-        String loginURI = request.getContextPath() + "/login";
 
-        boolean loggedIn = session != null && session.getAttribute("user") != null;
-        boolean loginRequest = request.getRequestURI().equals(loginURI);
-        boolean resourceRequest = request.getRequestURI().startsWith(request.getContextPath() + "/css/") ||
-                request.getRequestURI().startsWith(request.getContextPath() + "/js/");
-        if (loggedIn || loginRequest || resourceRequest) {
-            chain.doFilter(request, response); // Proceed to the next filter or servlet
+        HttpServletRequest httpRequest = (HttpServletRequest) request;
+        HttpServletResponse httpResponse = (HttpServletResponse) response;
+        HttpSession session = httpRequest.getSession(false); // Don't create a session if one doesn't exist
+
+        boolean isLoggedIn = (session != null && session.getAttribute("user") != null);
+
+        if (isLoggedIn) {
+            chain.doFilter(request, response); // User is authenticated, proceed
         } else {
-            response.sendRedirect(loginURI); // Redirect to login page
+            httpResponse.sendRedirect(httpRequest.getContextPath() + "/auth/login"); // Redirect to login
         }
     }
 
-    // init() and destroy() methods can be left empty if not needed
+    // init() and destroy() can be left empty if no specific initialization or cleanup is needed
 }

@@ -1,9 +1,7 @@
-// LoginServlet.java
 package com.sportflow.controller.auth;
 
 import com.sportflow.dao.UserDAO;
 import com.sportflow.model.User;
-import com.sportflow.util.HashUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -12,8 +10,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
+import java.sql.SQLException;
 
-@WebServlet("/login")
+@WebServlet(name = "LoginServlet", urlPatterns = {"/auth/login"})
 public class LoginServlet extends HttpServlet {
 
     private UserDAO userDAO;
@@ -21,7 +20,7 @@ public class LoginServlet extends HttpServlet {
     @Override
     public void init() throws ServletException {
         super.init();
-        userDAO = new UserDAO();
+        userDAO = new UserDAO(); // Initialize DAO
     }
 
     @Override
@@ -37,32 +36,33 @@ public class LoginServlet extends HttpServlet {
         String username = request.getParameter("username");
         String password = request.getParameter("password");
 
-        User user = userDAO.findByUsername(username);
+        try {
+            User user = userDAO.authenticate(username, password);
 
-        if (user != null && HashUtil.checkPassword(password, user.getPassword())) {
-            // Authentication successful
-            HttpSession session = request.getSession();
-            session.setAttribute("user", user);
+            if (user != null) {
+                // Authentication successful, create session
+                HttpSession session = request.getSession();
+                session.setAttribute("user", user);
 
-            // Redirect based on user role
-            switch (user.getRole()) {
-                case "ADMIN":
+                // Redirect based on role
+                if ("ADMIN".equals(user.getRole())) {
                     response.sendRedirect(request.getContextPath() + "/admin/dashboard");
-                    break;
-                case "ENTRAINER":
-                    response.sendRedirect(request.getContextPath() + "/entrainer/dashboard");
-                    break;
-                case "MEMBER":
+                } else if ("MEMBER".equals(user.getRole())) {
                     response.sendRedirect(request.getContextPath() + "/member/dashboard");
-                    break;
-                default:
-                    // Handle unexpected role (shouldn't happen)
-                    response.sendRedirect(request.getContextPath() + "/login");
+                } else if ("ENTRAINER".equals(user.getRole())) {
+                    response.sendRedirect(request.getContextPath() + "/entrainer/dashboard");
+                } else {
+                    // Handle unexpected roles (shouldn't happen)
+                    request.setAttribute("errorMessage", "Invalid user role.");
+                    request.getRequestDispatcher("/WEB-INF/jsp/auth/login.jsp").forward(request, response);
+                }
+            } else {
+                // Authentication failed
+                request.setAttribute("errorMessage", "Invalid username or password.");
+                request.getRequestDispatcher("/WEB-INF/jsp/auth/login.jsp").forward(request, response);
             }
-        } else {
-            // Authentication failed
-            request.setAttribute("error", "Invalid username or password");
-            request.getRequestDispatcher("/WEB-INF/jsp/auth/login.jsp").forward(request, response);
+        } catch (SQLException e) {
+            throw new ServletException("Database error during login.", e);
         }
     }
 }

@@ -1,11 +1,15 @@
-// BookSessionServlet.java
 package com.sportflow.controller.member;
 
-import com.sportflow.dao.SessionDAO;
 import com.sportflow.dao.BookingDAO;
-import com.sportflow.model.Session;
+import com.sportflow.dao.EntrainerDAO;
+import com.sportflow.dao.MemberDAO;
+import com.sportflow.dao.SessionDAO;
 import com.sportflow.model.Booking;
+import com.sportflow.model.Entrainer;
+import com.sportflow.model.Member;
+import com.sportflow.model.Session;
 import com.sportflow.model.User;
+import com.sportflow.util.DateUtil;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -13,77 +17,108 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import java.io.IOException;
-import java.util.List;
-import java.util.stream.Collectors;
 
-@WebServlet("/member/book-session")
+import java.io.IOException;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
+import java.util.ArrayList;
+
+@WebServlet(name = "BookSessionServlet", urlPatterns = {"/member/book-session", "/member/book-session/create", "/member/cancel-booking","/member/view-sessions"}) // Add URL pattern
 public class BookSessionServlet extends HttpServlet {
 
     private SessionDAO sessionDAO;
     private BookingDAO bookingDAO;
+    private EntrainerDAO entrainerDAO;
+    private MemberDAO memberDAO; // Add MemberDAO
 
     @Override
     public void init() throws ServletException {
+        super.init();
         sessionDAO = new SessionDAO();
         bookingDAO = new BookingDAO();
+        entrainerDAO = new EntrainerDAO();
+        memberDAO = new MemberDAO(); // Initialize MemberDAO
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String action = request.getParameter("action");
+        HttpSession session = request.getSession(false);
+        User user = (User) session.getAttribute("user");
+        Integer userId = user.getId();
 
-        if (action == null) {
-            action = "list";
-        }
+        String action = request.getServletPath();
 
-        switch (action) {
-            case "list":
-                listAvailableSessions(request, response);
-                break;
-            case "book":
-                bookSession(request, response);
-                break;
-            default:
-                listAvailableSessions(request, response);
+        try {
+            if (action.equals("/member/book-session") || action.equals("/member/view-sessions")) { // Handle both URLs
+                // Fetch available sessions
+                List<Session> allSessions = sessionDAO.getAllSessions();
+                List<Session> availableSessions = new ArrayList<>();
+
+                for (Session s : allSessions) {
+                    // Check capacity
+                    List<Booking> bookingsForSession = bookingDAO.getBookingsBySessionId(s.getId());
+                    if (bookingsForSession.size() < s.getMaxParticipants()) {
+                        availableSessions.add(s);
+                    }
+                }
+                request.setAttribute("sessions", availableSessions);
+
+                // Fetch entrainers for display (you might want a simplified EntrainerInfo object for this)
+                List<Entrainer> entrainers = entrainerDAO.getAllEntrainers();
+                request.setAttribute("entrainers", entrainers);
+                request.getRequestDispatcher("/WEB-INF/jsp/member/view-sessions.jsp").forward(request, response); // Forward to view-sessions.jsp
+
+            } else if (action.equals("/member/cancel-booking")) {
+                int bookingId = Integer.parseInt(request.getParameter("bookingId"));
+                bookingDAO.deleteBooking(bookingId);
+                response.sendRedirect(request.getContextPath() + "/member/dashboard");
+
+            }
+
+
+        } catch (SQLException e) {
+            throw new ServletException("Database error", e);
         }
     }
 
 
-    private void listAvailableSessions(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
-        User user = (User) session.getAttribute("user");
-        List<Session> allSessions = sessionDAO.getAllSessions();
 
-        // Get the IDs of sessions already booked by the member
-        List<Integer> bookedSessionIds = bookingDAO.getBookingsByMemberId(user.getId()).stream()
-                .map(Booking::getSessionId)
-                .collect(Collectors.toList());
-
-        // Filter out the sessions that the member has already booked
-        List<Session> availableSessions = allSessions.stream()
-                .filter(s -> !bookedSessionIds.contains(s.getId()))
-                .collect(Collectors.toList());
-
-        request.setAttribute("sessions", availableSessions);
-        request.getRequestDispatcher("/WEB-INF/jsp/member/book-session.jsp").forward(request, response);
-    }
-
-
-
-    private void bookSession(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        int sessionId = Integer.parseInt(request.getParameter("sessionId"));
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         User user = (User) session.getAttribute("user");
 
+        try {
+            Member member = memberDAO.getMemberByUserId(user.getId());
+            if (member == null) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No member found for this user.");
+                return;
+            }
+            int memberId = member.getId();
+            int sessionId = Integer.parseInt(request.getParameter("sessionId"));
 
-        Booking booking = new Booking();
-        booking.setMemberId(user.getId());
-        booking.setSessionId(sessionId);
-        booking.setStatus("CONFIRMED"); // Or "PENDING", depending on your requirements
-        bookingDAO.createBooking(booking);
+            // Check if the booking already exists *before* attempting to create it
+            if (bookingDAO.bookingExists(memberId, sessionId)) {
+                // Set an error message
+                request.setAttribute("errorMessage", "You have already booked this session.");
+                // Forward *back* to the view-sessions page to display the error
+                doGet(request, response); // Reuse doGet to re-fetch and display data
+            } else {
+                // Booking doesn't exist, proceed with creation
+                Booking booking = new Booking();
+                booking.setMemberId(memberId);
+                booking.setSessionId(sessionId);
+                bookingDAO.createBooking(booking);
+                response.sendRedirect(request.getContextPath() + "/member/dashboard");
+            }
 
-        response.sendRedirect(request.getContextPath() + "/member/dashboard");
+        } catch (SQLException e) {
+            // Handle database errors (other than duplicate booking)
+            request.setAttribute("errorMessage", "A database error occurred. Please try again later.");
+            doGet(request, response); // Forward back to the form
+        }
     }
 
 }

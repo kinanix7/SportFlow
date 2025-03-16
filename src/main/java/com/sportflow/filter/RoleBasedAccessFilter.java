@@ -1,4 +1,3 @@
-// RoleBasedAccessFilter.java
 package com.sportflow.filter;
 
 import com.sportflow.model.User;
@@ -9,62 +8,40 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
+@WebFilter(urlPatterns = {"/admin/*", "/member/*", "/entrainer/*"}) // Same as AuthenticationFilter, combined for simplicity
 public class RoleBasedAccessFilter implements Filter {
 
-    private Map<String, String> roleBasedAccess;
-
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
-        // Define role-based access rules
-        roleBasedAccess = new HashMap<>();
-        roleBasedAccess.put("/admin/*", "ADMIN");
-        roleBasedAccess.put("/member/*", "MEMBER");
-        roleBasedAccess.put("/entrainer/*", "ENTRAINER");
-        // Add more rules as needed
-    }
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
 
-    @Override
-    public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
-        HttpServletRequest request = (HttpServletRequest) req;
-        HttpServletResponse response = (HttpServletResponse) res;
-        HttpSession session = request.getSession(false);
+        HttpServletRequest httpRequest = (HttpServletRequest) request;
+        HttpServletResponse httpResponse = (HttpServletResponse) response;
+        HttpSession session = httpRequest.getSession(false);
 
-        String requestPath = request.getRequestURI().substring(request.getContextPath().length()); // Get path without context
+        // Get the user from the session (AuthenticationFilter should have already checked for login)
+        User user = (session != null) ? (User) session.getAttribute("user") : null;
 
-        // Check if the requested path requires role-based access
-        for (Map.Entry<String, String> entry : roleBasedAccess.entrySet()) {
-            if (requestPath.startsWith(entry.getKey())) {
-                // Check if user has required role
-                if (session != null && session.getAttribute("user") != null) {
-                    User user = (User) session.getAttribute("user");
-                    if (entry.getValue().equals(user.getRole())) {
-                        chain.doFilter(req, res);  // User has the correct role, proceed
-                        return;
-                    }
-                    else{
-                        // User does NOT have the required role
-                        response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied"); // 403 Forbidden
-                        return; // Important: Stop processing here!
-                    }
+        if (user != null) {
+            String requestURI = httpRequest.getRequestURI();
+            String userRole = user.getRole();
 
-                }
-                else{
-                    response.sendRedirect(request.getContextPath() + "/login");
-                    return;
-                }
-
-
+            // Check role-based access
+            if (requestURI.startsWith(httpRequest.getContextPath() + "/admin/") && !userRole.equals("ADMIN")) {
+                httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied");
+                return;
+            } else if (requestURI.startsWith(httpRequest.getContextPath() + "/member/") && !userRole.equals("MEMBER")) {
+                httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied");
+                return;
+            } else if (requestURI.startsWith(httpRequest.getContextPath() + "/entrainer/") && !userRole.equals("ENTRAINER")) {
+                httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied");
+                return;
             }
+        } else {
+            //If no user logged in we do nothing so the request is forwarded to authentication filter
         }
-        chain.doFilter(req, res); // No specific role required, so continue
-    }
 
-
-    @Override
-    public void destroy() {
-        // Cleanup resources
+        chain.doFilter(request, response); // Proceed if access is allowed
     }
 }

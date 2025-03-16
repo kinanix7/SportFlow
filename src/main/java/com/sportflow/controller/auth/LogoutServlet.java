@@ -1,4 +1,3 @@
-// LogoutServlet.java
 package com.sportflow.controller.auth;
 
 import jakarta.servlet.ServletException;
@@ -10,16 +9,16 @@ import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 
-@WebServlet("/logout")
+@WebServlet(name = "LogoutServlet", urlPatterns = {"/auth/logout"})
 public class LogoutServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        HttpSession session = request.getSession(false); // Don't create a new session if one doesn't exist
+        HttpSession session = request.getSession(false); // Get existing session, don't create
         if (session != null) {
             session.invalidate(); // Invalidate the session
         }
-        response.sendRedirect(request.getContextPath() + "/login"); // Redirect to login page
+        response.sendRedirect(request.getContextPath() + "/auth/login"); // Redirect to login
     }
 }
